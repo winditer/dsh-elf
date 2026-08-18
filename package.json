@@ -1,6 +1,6 @@
 {
   "name": "dsh-elf",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "DSH 小精灵插件：页面悬浮一只缓慢游动的半透明 DeepSeek 鲸鱼（官方 favicon 轮廓 + 蓝紫绿渐变），点击打开可拖动/最小化的临时聊天浮窗；默认跟随会话模型，支持插件内单独配置 OpenAI 兼容模型，流式输出、复制、清空。",
   "license": "MIT",
   "type": "module",
