@@ -36,9 +36,15 @@ await esbuild.build({
 const bundle = readFileSync(outRaw, 'utf8');
 
 // 运行时约束（与 dsh-prompt-optimizer 同源）：bundle 的 load id 必须等于安装包名 dsh-elf，
-// 否则 arrive() 抛出 "bundle loaded without registering <id>"。
+// 否则 arrive() 抛出 "bundle loaded without registering <id>"。从 package.json 派生 id，
+// 一旦包名（或这段逻辑）漂移就在构建期立刻失败，而不是等运行时才爆。
+const pkg = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8'));
+const id = String(pkg.name || '').trim();
+if (!/^[a-z0-9][a-z0-9-]*$/i.test(id)) {
+  throw new Error(`bundle load id must be a valid package name, got: ${JSON.stringify(pkg.name)}`);
+}
 const wrapped = `window.__ModuleLoader__.load({
-  id: "dsh-elf",
+  id: "${id}",
   factory: (require) => {
     var module = { exports: {} };
     var exports = module.exports;
