@@ -12,6 +12,13 @@ English | [中文](README.zh.md)
 
 A DeepSeek whale elf that lives on your DSH page. A translucent, slowly drifting whale (rendered from the official DeepSeek favicon path, tinted blue → purple → green) hovers at the edge of the viewport; click it to open a lightweight, draggable chat window that never touches your session history.
 
+## Screenshots
+
+<p align="center">
+  <img src="assets/screenshot-elf.png" width="46%" alt="The whale elf hovering at the corner of the page">
+  <img src="assets/screenshot-chat.png" width="46%" alt="The temporary chat window opened by clicking the elf">
+</p>
+
 ## Features
 
 - **Living elf** — the whale slowly wanders around its anchor point (sin/cos drift plus a bob animation); drag it anywhere and the position persists across restarts
@@ -43,7 +50,7 @@ Restart DSH (quit fully and reopen), then a fresh page shows the elf at the bott
 ### From source (development)
 
 ```sh
-git clone <your-repo-url> dsh-elf && cd dsh-elf
+git clone https://github.com/winditer/dsh-elf.git dsh-elf && cd dsh-elf
 npm install
 npm run build          # produces dist/client.js
 dsh plugin --profile desktop add .    # links the workspace into the profile by package name

@@ -12,6 +12,13 @@
 
 一只住在 DSH 页面上的 DeepSeek 鲸鱼小精灵。半透明的鲸鱼（取官方 DeepSeek favicon 轮廓，蓝 → 紫 → 绿渐变）悬浮在视口边缘缓慢游动；点击即可打开一个轻量、可拖动的临时聊天浮窗，**不会写入任何会话历史**。
 
+## 截图
+
+<p align="center">
+  <img src="assets/screenshot-elf.png" width="46%" alt="悬浮在页面角落的鲸鱼小精灵">
+  <img src="assets/screenshot-chat.png" width="46%" alt="点击小精灵打开的临时聊天浮窗">
+</p>
+
 ## 功能特性
 
 - **活的小精灵** — 鲸鱼围绕锚点缓慢游动（正弦/余弦漂移 + 呼吸动画）；可拖到任意位置，位置跨重启持久化
@@ -42,7 +49,7 @@ dsh plugin --profile desktop add dsh-elf
 ### 从源码安装（开发模式）
 
 ```sh
-git clone <你的仓库地址> dsh-elf && cd dsh-elf
+git clone https://github.com/winditer/dsh-elf.git dsh-elf && cd dsh-elf
 npm install
 npm run build          # 产出 dist/client.js
 dsh plugin --profile desktop add .    # 按包名把工作区以 link 装进 profile
