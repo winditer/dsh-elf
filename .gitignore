@@ -1,4 +1,3 @@
 node_modules/
 dist/client.js
-package-lock.json
 .DS_Store
