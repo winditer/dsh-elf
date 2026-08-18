@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="whalegrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4D6BFE"/>
+      <stop offset="50%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#34D399"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(2,2)">
+    <path d="M8 35 C10 24, 22 18, 34 18 C44 18, 50 23, 52 28
+             C56 22, 62 18, 64 18 C60 24, 58 28, 56 30
+             C60 32, 63 36, 64 38 C60 35, 56 33, 52 32
+             C40 38, 22 39, 12 38 C9 37, 8 36, 8 35 Z"
+          fill="url(#whalegrad)" fill-opacity="0.85" stroke="none"/>
+    <path d="M22 31 C19 35, 19 39, 22 41 C25 39, 27 35, 27 31 Z"
+          fill="url(#whalegrad)" fill-opacity="0.85"/>
+    <circle cx="17" cy="27" r="1.6" fill="#ffffff" fill-opacity="0.9"/>
+  </g>
+</svg>

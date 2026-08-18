@@ -1,0 +1,7 @@
+# dsh-elf —— bundle 层入口声明（profile 的 dsh.profile.bundles 加载本包时应用）。
+# 语义与 dsh-prompt-optimizer 同源（实证自 dsh-app-boot applyEntryPatches）：
+# 新建条目必须用 `insert:`；name 被 loader 用作 tree.import 的包名（必须等于安装包名 dsh-elf），
+# id 为 fiber/入口标识。
+- insert:
+    - id: elf
+      name: dsh-elf
