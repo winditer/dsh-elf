@@ -1,3 +1,4 @@
 node_modules/
 dist/client.js
 .DS_Store
+.pr-pack/
