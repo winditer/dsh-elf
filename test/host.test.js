@@ -179,3 +179,35 @@ test('a stream that throws surfaces the error on poll and still ends', async () 
   assert.equal(r.done, true)
   assert.match(r.error, /provider exploded/)
 })
+test('chat.start errors follow the requested language', async () => {
+  const handler = mount()
+  const enRes = await call(handler, makeReq({ url: '/dsh-elf/api/elf.chat.start', json: { lang: 'en', messages: [] } }))
+  assert.equal(enRes.status, 200)
+  assert.deepEqual(parse(enRes).value, { ok: false, error: 'No message content' })
+  const zhRes = await call(handler, makeReq({ url: '/dsh-elf/api/elf.chat.start', json: { messages: [] } }))
+  assert.deepEqual(parse(zhRes).value, { ok: false, error: '没有消息内容' })
+})
+
+test('protocol errors follow the lang from the request body', async () => {
+  const handler = mount()
+  const badMethod = await call(handler, makeReq({ method: 'GET', url: '/dsh-elf/api/elf.sessionModel', json: { lang: 'en' } }))
+  assert.equal(badMethod.status, 405)
+  assert.deepEqual(parse(badMethod), { ok: false, error: 'Only POST is supported' })
+  const unknown = await call(handler, makeReq({ url: '/dsh-elf/api/elf.nope', json: { lang: 'en' } }))
+  assert.equal(unknown.status, 404)
+  assert.deepEqual(parse(unknown), { ok: false, error: 'Unknown elf API: elf.nope' })
+})
+
+test('the system prompt is a bilingual template and follows lang', async () => {
+  const captured = []
+  const handler = mount({
+    llmStream: async function* (options) { captured.push(options); },
+  })
+  await call(handler, makeReq({ url: '/dsh-elf/api/elf.chat.start', json: { lang: 'en', messages: [{ role: 'user', text: 'hi' }] } }))
+  await call(handler, makeReq({ url: '/dsh-elf/api/elf.chat.start', json: { lang: 'zh', messages: [{ role: 'user', text: '嗨' }] } }))
+  await new Promise((resolve) => setImmediate(resolve))
+  assert.equal(captured.length, 2)
+  assert.match(captured[0].system, /DeepSeek elf living in DSH/)
+  assert.match(captured[0].system, /user's current UI language/)
+  assert.match(captured[1].system, /住在 DSH 里的 DeepSeek 小精灵/)
+})

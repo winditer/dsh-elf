@@ -510,7 +510,7 @@ const plugin = {
         }
 
         // Session-default route via the host (the harness's configured provider).
-        const payload = { messages: wire };
+        const payload = { messages: wire, lang: lang === 'zh' ? 'zh' : 'en' };
         callHost('elf.chat.start', payload).then((r) => {
           if (r && r.ok) {
             setChatId(r.chatId);
