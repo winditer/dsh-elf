@@ -6,6 +6,7 @@
 // OpenAI-compatible endpoint (base URL + API key + model), streamed directly
 // from the browser for true token-by-token responses.
 import React from 'react';
+import { en, zh, NS } from './locales.js';
 
 const API_PREFIX = '/dsh-elf/api';
 
@@ -17,14 +18,24 @@ async function callHost(method, args) {
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok || !payload || !payload.ok) {
-    throw new Error((payload && payload.error) || `小精灵 Host 请求失败 (${response.status})`);
+    throw new Error((payload && payload.error) || zh.hostFail.replace('{0}', String(response.status)));
   }
   return payload.value;
 }
 
 const plugin = {
-  inject: ['slots'],
+  inject: ['slots', 'locale'],
   apply(ctx) {
+    const locale = ctx.locale;
+    const t = locale ? locale.bind(NS) : null;
+    if (locale) {
+      ctx.effect(() => locale.register(NS, { zh, en }), 'dsh-elf: dictionaries');
+    }
+    function currentLang() {
+      const active = locale ? String(locale.getSnapshot().active) : String(document.documentElement.lang || navigator.language || 'zh');
+      return active.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+    }
+
     // NOTE: this is a profile-bundle client plugin, so cordis's `timer` service is
     // NOT available on the bundle ctx (that service is only installed for dynamic
     // cordis-runner packages). Use plain browser timers instead — the same pattern
@@ -59,12 +70,12 @@ const plugin = {
 
     // ---- Preset providers (id, label, default OpenAI-compatible base URL) ----
     const PRESETS = [
-      { id: 'deepseek', label: 'DeepSeek', base: 'https://api.deepseek.com/v1' },
-      { id: 'openai', label: 'OpenAI', base: 'https://api.openai.com/v1' },
-      { id: 'moonshot', label: 'Moonshot Kimi', base: 'https://api.moonshot.cn/v1' },
-      { id: 'zhipu', label: '智谱 GLM', base: 'https://open.bigmodel.cn/api/paas/v4' },
-      { id: 'qwen', label: '通义千问', base: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
-      { id: 'custom', label: '自定义', base: '' },
+      { id: 'deepseek', labelKey: 'presetDeepseek', base: 'https://api.deepseek.com/v1' },
+      { id: 'openai', labelKey: 'presetOpenai', base: 'https://api.openai.com/v1' },
+      { id: 'moonshot', labelKey: 'presetMoonshot', base: 'https://api.moonshot.cn/v1' },
+      { id: 'zhipu', labelKey: 'presetZhipu', base: 'https://open.bigmodel.cn/api/paas/v4' },
+      { id: 'qwen', labelKey: 'presetQwen', base: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
+      { id: 'custom', labelKey: 'presetCustom', base: '' },
     ];
 
     // ---- Styles ----
@@ -180,6 +191,11 @@ const plugin = {
     let lastDragMoved = false;
 
     function ElfApp() {
+      const lang = React.useSyncExternalStore(
+        (cb) => (locale ? locale.subscribe(cb) : () => {}),
+        () => currentLang(),
+      );
+      const T = lang === 'zh' ? zh : en;
       const [mode, setMode] = React.useState('orb'); // 'orb' | 'chat'
       const [msgs, setMsgs] = React.useState([]);
       const [input, setInput] = React.useState('');
@@ -234,7 +250,7 @@ const plugin = {
       if (cfg) {
         if (!cfg.follow && cfg.model) effModel = (cfg.base || 'custom').replace(/^https?:\/\//, '').split('/')[0] + '/' + cfg.model + (cfg.effort ? ' · ' + cfg.effort : '');
         else if (session) effModel = session.provider + '/' + session.model;
-        else effModel = '跟随默认';
+        else effModel = T.modelFollow;
       }
 
       // ---- orb drift: slow wandering, clamped to the viewport ----
@@ -362,7 +378,7 @@ const plugin = {
               setMsgs((prev) => {
                 const copy = prev.slice();
                 const last = lastOf(copy);
-                if (last && last.role === 'assistant' && last.pending) copy[copy.length - 1] = { role: 'assistant', text: '', pending: false, error: (r && r.error) || '对话结束' };
+                if (last && last.role === 'assistant' && last.pending) copy[copy.length - 1] = { role: 'assistant', text: '', pending: false, error: (r && r.error) || T.chatEnded };
                 return copy;
               });
             }
@@ -406,7 +422,7 @@ const plugin = {
             setMsgs((prev) => {
               const copy = prev.slice();
               const last = lastOf(copy);
-              if (last && last.role === 'assistant' && last.pending) copy[copy.length - 1] = { role: 'assistant', text: '', pending: false, error: '请先填写 API 地址、API Key 和模型名' };
+              if (last && last.role === 'assistant' && last.pending) copy[copy.length - 1] = { role: 'assistant', text: '', pending: false, error: T.needCustomCfg };
               return copy;
             });
             return;
@@ -503,7 +519,7 @@ const plugin = {
             setMsgs((prev) => {
               const copy = prev.slice();
               const last = lastOf(copy);
-              if (last && last.role === 'assistant' && last.pending) copy[copy.length - 1] = { role: 'assistant', text: '', pending: false, error: (r && r.error) || '请求失败' };
+              if (last && last.role === 'assistant' && last.pending) copy[copy.length - 1] = { role: 'assistant', text: '', pending: false, error: (r && r.error) || T.reqFailed };
               return copy;
             });
           }
@@ -578,7 +594,7 @@ const plugin = {
               style: orbStyle,
               onPointerDown: startOrbDrag,
               onClick: (e) => { const moved = lastDragMoved; lastDragMoved = false; if (!moved) { setMode('chat'); } },
-              title: 'DeepSeek 小精灵',
+              title: T.name,
             },
               React.createElement(WhaleIcon, { key: 'whale', size: 40, gid: 'dsh-elf-grad-orb' }),
             ),
@@ -586,32 +602,32 @@ const plugin = {
         } else {
           const headChildren = [
             React.createElement(WhaleIcon, { key: 'whale', size: 24, gid: 'dsh-elf-grad-head' }),
-            React.createElement('span', { key: 'title', className: 'dsh-elf-title' }, 'DeepSeek 精灵'),
-            React.createElement('span', { key: 'model', className: 'dsh-elf-model', title: '当前模型' }, effModel),
+            React.createElement('span', { key: 'title', className: 'dsh-elf-title' }, T.title),
+            React.createElement('span', { key: 'model', className: 'dsh-elf-model', title: T.modelBadgeTitle }, effModel),
             React.createElement('span', { key: 'sp', className: 'dsh-elf-spacer' }),
-            React.createElement('button', { key: 'cfg', className: 'dsh-elf-headbtn', title: '模型配置', onClick: () => setCfgOpen(!cfgOpen) }, '⚙'),
-            React.createElement('button', { key: 'min', className: 'dsh-elf-headbtn', title: '最小化到小精灵', onClick: () => setMode('orb') }, '—'),
-            React.createElement('button', { key: 'clear', className: 'dsh-elf-clear', title: '清空聊天', onClick: clearChat, disabled: !msgs.length }, '清空'),
+            React.createElement('button', { key: 'cfg', className: 'dsh-elf-headbtn', title: T.cfgBtn, onClick: () => setCfgOpen(!cfgOpen) }, '⚙'),
+            React.createElement('button', { key: 'min', className: 'dsh-elf-headbtn', title: T.mini, onClick: () => setMode('orb') }, '—'),
+            React.createElement('button', { key: 'clear', className: 'dsh-elf-clear', title: T.clearTitle, onClick: clearChat, disabled: !msgs.length }, T.clear),
           ];
 
           const cfgChildren = [];
           if (cfg) {
             const presetOptions = PRESETS.map((p) =>
-              React.createElement('option', { key: p.id, value: p.id }, p.label));
+              React.createElement('option', { key: p.id, value: p.id }, T[p.labelKey]));
             cfgChildren.push(
               React.createElement('div', { key: 'r0', className: 'dsh-elf-configrow' },
-                React.createElement('label', null, '模型来源'),
+                React.createElement('label', null, T.modelSource),
                 React.createElement('label', { className: 'dsh-elf-check', key: 'follow' },
                   React.createElement('input', {
                     type: 'checkbox',
                     checked: !!cfg.follow,
                     onChange: (e) => setCfg(Object.assign({}, cfg, { follow: e.target.checked })),
                   }),
-                  '跟随会话默认',
+                  T.follow,
                 ),
               ),
               React.createElement('div', { key: 'r1', className: 'dsh-elf-configrow' },
-                React.createElement('label', { htmlFor: 'dsh-elf-provider' }, '提供方'),
+                React.createElement('label', { htmlFor: 'dsh-elf-provider' }, T.provider),
                 React.createElement('select', {
                   id: 'dsh-elf-provider',
                   value: cfg.provider,
@@ -620,7 +636,7 @@ const plugin = {
                 }, presetOptions),
               ),
               React.createElement('div', { key: 'r2', className: 'dsh-elf-configrow' },
-                React.createElement('label', { htmlFor: 'dsh-elf-base' }, 'API 地址'),
+                React.createElement('label', { htmlFor: 'dsh-elf-base' }, T.apiBase),
                 React.createElement('input', {
                   id: 'dsh-elf-base', type: 'text', placeholder: 'https://api.deepseek.com/v1', value: cfg.base,
                   disabled: cfg.follow,
@@ -628,7 +644,7 @@ const plugin = {
                 }),
               ),
               React.createElement('div', { key: 'r3', className: 'dsh-elf-configrow' },
-                React.createElement('label', { htmlFor: 'dsh-elf-key' }, 'API Key'),
+                React.createElement('label', { htmlFor: 'dsh-elf-key' }, T.apiKey),
                 React.createElement('input', {
                   id: 'dsh-elf-key', type: 'password', placeholder: 'sk-…', value: cfg.apiKey,
                   disabled: cfg.follow,
@@ -636,23 +652,23 @@ const plugin = {
                 }),
               ),
               React.createElement('div', { key: 'r4', className: 'dsh-elf-configrow' },
-                React.createElement('label', { htmlFor: 'dsh-elf-model' }, '模型'),
+                React.createElement('label', { htmlFor: 'dsh-elf-model' }, T.model),
                 React.createElement('input', {
-                  id: 'dsh-elf-model', type: 'text', placeholder: '例如 deepseek-chat', value: cfg.model,
+                  id: 'dsh-elf-model', type: 'text', placeholder: T.modelPh, value: cfg.model,
                   disabled: cfg.follow,
                   onChange: (e) => setCfg(Object.assign({}, cfg, { model: e.target.value })),
                 }),
               ),
               React.createElement('div', { key: 'r5', className: 'dsh-elf-configrow' },
-                React.createElement('label', { htmlFor: 'dsh-elf-effort' }, 'reasoning'),
+                React.createElement('label', { htmlFor: 'dsh-elf-effort' }, T.reasoning),
                 React.createElement('input', {
-                  id: 'dsh-elf-effort', type: 'text', placeholder: '可选：high / medium / low', value: cfg.effort,
+                  id: 'dsh-elf-effort', type: 'text', placeholder: T.effortPh, value: cfg.effort,
                   disabled: cfg.follow,
                   onChange: (e) => setCfg(Object.assign({}, cfg, { effort: e.target.value })),
                 }),
               ),
               React.createElement('div', { key: 'hint', className: 'dsh-elf-hint' },
-                '自定义模式下小精灵直接调用该 API 地址（OpenAI 兼容 /chat/completions 流式接口）。取消勾选"跟随会话默认"后生效。',
+                T.cfgHint,
               ),
             );
           }
@@ -668,12 +684,12 @@ const plugin = {
               (!m.pending && m.text ? React.createElement('button', {
                 className: 'copy',
                 onClick: (e) => copyMsg(m.text, e),
-                title: '复制',
+                title: T.copy,
               }, '📋') : null),
             );
           });
           if (!msgs.length) {
-            msgChildren.push(React.createElement('div', { key: 'empty', className: 'dsh-elf-msg assistant', style: { opacity: '.72' } }, '在小精灵里临时聊几句吧 ✨（不会写入会话记录）'));
+            msgChildren.push(React.createElement('div', { key: 'empty', className: 'dsh-elf-msg assistant', style: { opacity: '.72' } }, T.empty));
           }
 
           children.push(
@@ -687,7 +703,7 @@ const plugin = {
                 React.createElement('textarea', {
                   className: 'dsh-elf-input',
                   rows: 1,
-                  placeholder: '问小精灵点什么…',
+                  placeholder: T.inputPh,
                   value: input,
                   onChange: (e) => setInput(e.target.value),
                   onKeyDown: onInputKey,
@@ -703,7 +719,7 @@ const plugin = {
 
     // ---- Slot registration ----
     ctx.slots.inject('shell.overlay', () => ctx.slots.register(
-      { name: 'shell.overlay', id: 'dsh-elf', order: 500, label: 'DeepSeek 小精灵' },
+      { name: 'shell.overlay', id: 'dsh-elf', order: 500, label: () => (t ? t('name') : (currentLang() === 'zh' ? zh.name : en.name)), locale: NS },
       () => React.createElement(ElfApp, null),
     ));
   },

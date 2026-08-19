@@ -25,3 +25,16 @@ test('client half styles the "follow session default" checkbox explicitly', () =
   assert.match(client, /\.dsh-elf-configrow label\.dsh-elf-check \{ width: auto/, 'follow label must not inherit the 84px column width')
   assert.match(client, /input\[type='text'\], \.dsh-elf-configrow input\[type='password'\]/, 'generic input styling must exclude the checkbox')
 })
+test('client half follows the DSH locale service with zh/en dictionaries', () => {
+  assert.match(client, /inject: \['slots', 'locale'\]/, 'client must inject the locale service')
+  assert.match(client, /React\.useSyncExternalStore\(/, 'locale changes must re-render via useSyncExternalStore')
+  assert.match(client, /startsWith\('zh'\)/, 'zh must be detected by language prefix')
+  assert.match(client, /navigator\.language/, 'must fall back to navigator.language when the locale service is absent')
+  assert.match(client, /register\(NS, \{ zh, en \}\)/, 'dictionaries must be registered under the dsh-elf namespace')
+})
+
+test('client half no longer hardcodes user-visible Chinese literals', () => {
+  for (const literal of ['问小精灵点什么', '跟随会话默认', '清空聊天', '请先填写 API 地址', '暂时聊几句']) {
+    assert.doesNotMatch(client, new RegExp(literal), `literal must move to the dictionary: ${literal}`)
+  }
+})
