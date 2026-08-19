@@ -27,6 +27,7 @@ A DeepSeek whale elf that lives on your DSH page. A translucent, slowly drifting
 - **Custom endpoint mode** — uncheck "follow session default" and plug in any OpenAI-compatible endpoint (DeepSeek / OpenAI / Moonshot / GLM / Qwen / custom base URL), streamed token-by-token directly from the browser
 - **Real streaming** — host-route chats poll the streaming response (~55 ms) so text appears as it is generated; custom endpoints use native SSE
 - **Nice-to-haves** — copy per message, one-click clear, model badge, light/dark theme, empty-state hint, drag clamping (you can't lose the elf off-screen)
+- **Follows your language** — the elf UI switches between 中文 / English automatically, matching the language setting in DSH; no reload needed
 
 ## Requirements
 
@@ -155,7 +156,7 @@ assets/            Logo / whale artwork
 
   ```yaml
   minimumReleaseAgeExclude:
-    - dsh-elf@2.1.0
+    - dsh-elf@2.2.0
   ```
 
 ## License

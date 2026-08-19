@@ -3,6 +3,14 @@
 All notable changes to dsh-elf are tracked here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 2.2.0 — 2026-08-19
+
+- UI now follows the DSH settings language and switches between Chinese and
+  English live (no reload needed); falls back to the page language on hosts
+  without the locale service.
+- Host error messages follow the request language; the system prompt is a
+  bilingual template so the elf replies in the user's current UI language.
+
 ## 2.1.0 — 2026-08-18
 
 - Added the two README screenshots used by plugin storefronts.
