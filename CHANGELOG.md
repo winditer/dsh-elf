@@ -3,6 +3,14 @@
 All notable changes to dsh-elf are tracked here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 2.2.1 — 2026-08-19
+
+- Fixed invisible streaming: a pending assistant message carried the growing
+  text in `m.text`, but the render branch drew only the typing dots until the
+  reply finished, so the whole answer appeared at once. The bubble now paints
+  the accumulating text as tokens arrive (both the host-polled and the custom
+  SSE routes), with the typing dots as a fallback before the first token.
+
 ## 2.2.0 — 2026-08-19
 
 - UI now follows the DSH settings language and switches between Chinese and

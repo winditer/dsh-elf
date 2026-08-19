@@ -38,3 +38,12 @@ test('client half no longer hardcodes user-visible Chinese literals', () => {
     assert.doesNotMatch(client, new RegExp(literal), `literal must move to the dictionary: ${literal}`)
   }
 })
+
+test('client half paints accumulating text while a message is still streaming', () => {
+  // Regression guard: a pending assistant message carried the growing streamed
+  // text in `m.text`, but the render branch only drew the typing dots until
+  // `pending` flipped to false — the whole answer then appeared at once, so
+  // streaming was invisible (users saw spinning dots, then the full reply).
+  assert.match(client, /m\.pending \? \(m\.text \|\| typing\)/, 'pending bubble must show m.text once any token arrived')
+  assert.match(client, /const typing = React\.createElement\('span', \{ className: 'dsh-elf-typing' \}/, 'typing dots must be the fallback, not the only pending render')
+})

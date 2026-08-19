@@ -675,10 +675,9 @@ const plugin = {
 
           const msgChildren = msgs.map((m, i) => {
             const cls = 'dsh-elf-msg ' + (m.role === 'user' ? 'user' : 'assistant') + (m.error ? ' error' : '');
-            const inner = m.pending
-              ? React.createElement('span', { className: 'dsh-elf-typing' },
-                  React.createElement('i', null), React.createElement('i', null), React.createElement('i', null))
-              : m.text || (m.error ? m.error : '');
+            const typing = React.createElement('span', { className: 'dsh-elf-typing' },
+              React.createElement('i', null), React.createElement('i', null), React.createElement('i', null));
+            const inner = m.pending ? (m.text || typing) : (m.text || (m.error ? m.error : ''));
             return React.createElement('div', { key: 'm' + i, className: cls },
               inner,
               (!m.pending && m.text ? React.createElement('button', {

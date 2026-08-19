@@ -155,7 +155,7 @@ assets/            Logo / 鲸鱼素材
 
   ```yaml
   minimumReleaseAgeExclude:
-    - dsh-elf@2.2.0
+    - dsh-elf@2.2.1
   ```
 
 ## 许可证

@@ -156,7 +156,7 @@ assets/            Logo / whale artwork
 
   ```yaml
   minimumReleaseAgeExclude:
-    - dsh-elf@2.2.0
+    - dsh-elf@2.2.1
   ```
 
 ## License
